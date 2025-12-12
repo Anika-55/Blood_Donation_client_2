@@ -19,6 +19,8 @@ export default function Register() {
   const [upazilas, setUpazilas] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [message, setMessage] = useState("");
+  const [user, setUser] = useState(null); // track registered user
+  const [loading, setLoading] = useState(false);
 
   // Fetch districts from centers.json
   useEffect(() => {
@@ -55,6 +57,8 @@ export default function Register() {
       return;
     }
 
+    setLoading(true);
+
     try {
       const res = await fetch("http://localhost:5000/api/auth/register", {
         method: "POST",
@@ -63,6 +67,7 @@ export default function Register() {
       });
 
       const data = await res.json();
+      setLoading(false);
 
       if (!res.ok) {
         setMessage(data.message || "Registration failed");
@@ -70,10 +75,27 @@ export default function Register() {
       }
 
       setMessage("Registration successful!");
-      navigate("/"); // redirect to home page after success
+      setUser({ name: formData.name, email: formData.email }); // save user
+      navigate("/"); // redirect to home page
     } catch (err) {
+      setLoading(false);
       setMessage("Server error. Try again later.");
+      console.error(err);
     }
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setFormData({
+      name: "",
+      email: "",
+      password: "",
+      confirm_password: "",
+      avatar: "",
+      bloodGroup: "",
+      district: "",
+      upazila: "",
+    });
   };
 
   return (
@@ -85,6 +107,7 @@ export default function Register() {
             {message}
           </div>
         )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
@@ -172,22 +195,37 @@ export default function Register() {
             className="w-full p-2 border rounded"
             required
           />
-          <button
-            type="submit"
-            className="w-full bg-red-600 text-white p-2 rounded hover:bg-red-700"
-          >
-            Register
-          </button>
+
+          {!user ? (
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-red-600 text-white p-2 rounded hover:bg-red-700"
+            >
+              {loading ? "Registering..." : "Register"}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="w-full bg-gray-600 text-white p-2 rounded hover:bg-gray-700"
+            >
+              Logout
+            </button>
+          )}
         </form>
-        <p className="mt-4 text-center text-sm">
-          Already have an account?{" "}
-          <span
-            className="text-red-600 cursor-pointer"
-            onClick={() => navigate("/login")}
-          >
-            Login
-          </span>
-        </p>
+
+        {!user && (
+          <p className="mt-4 text-center text-sm">
+            Already have an account?{" "}
+            <span
+              className="text-red-600 cursor-pointer"
+              onClick={() => navigate("/login")}
+            >
+              Login
+            </span>
+          </p>
+        )}
       </div>
     </AuthLayout>
   );

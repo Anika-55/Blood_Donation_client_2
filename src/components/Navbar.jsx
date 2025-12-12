@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { MdDashboardCustomize } from "react-icons/md";
 import {
   FaBars,
@@ -13,14 +13,32 @@ import {
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
   const links = [
     { name: "Home", path: "/", icon: <FaHome /> },
-    { name: "Donate", path: "/donate", icon: <FaHandHoldingHeart /> },
+    {
+      name: "Requests",
+      path: "/donations",
+      icon: <FaHandHoldingHeart />,
+    },
     { name: "Donors", path: "/donors", icon: <FaUsers /> },
     { name: "Dashboard", path: "/dashboard", icon: <MdDashboardCustomize /> },
     { name: "Contact", path: "/contact", icon: <FaPhone /> },
   ];
+
+  // Load user from localStorage on mount
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) setUser(JSON.parse(storedUser));
+  }, []);
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
 
   return (
     <nav className="fixed top-0 left-0 w-full backdrop-blur-lg bg-white/70 border-b border-red-200/20 z-50">
@@ -62,12 +80,21 @@ export default function Navbar() {
             </NavLink>
           ))}
 
-          <Link
-            to="/register"
-            className="px-5 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition shadow-md"
-          >
-            Register
-          </Link>
+          {!user ? (
+            <Link
+              to="/register"
+              className="px-5 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition shadow-md"
+            >
+              Register
+            </Link>
+          ) : (
+            <button
+              onClick={handleLogout}
+              className="px-5 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition shadow-md"
+            >
+              Logout
+            </button>
+          )}
         </div>
 
         {/* Mobile Hamburger */}
@@ -97,13 +124,25 @@ export default function Navbar() {
             </NavLink>
           ))}
 
-          <Link
-            to="/login"
-            onClick={() => setOpen(false)}
-            className="px-4 py-2 bg-red-600 text-white rounded-xl text-center shadow hover:bg-red-700 transition"
-          >
-            Login
-          </Link>
+          {!user ? (
+            <Link
+              to="/login"
+              onClick={() => setOpen(false)}
+              className="px-4 py-2 bg-red-600 text-white rounded-xl text-center shadow hover:bg-red-700 transition"
+            >
+              Login
+            </Link>
+          ) : (
+            <button
+              onClick={() => {
+                handleLogout();
+                setOpen(false);
+              }}
+              className="px-4 py-2 bg-red-600 text-white rounded-xl text-center shadow hover:bg-red-700 transition"
+            >
+              Logout
+            </button>
+          )}
         </div>
       </div>
     </nav>
