@@ -6,6 +6,10 @@ import Register from "../pages/Auth/Register";
 import BloodDonations from "../pages/Requests/BloodDonationRequests";
 import DonationDetails from "../pages/Requests/DonationDetails";
 import PrivateRoute from "./PrivateRoute";
+import DashboardLayout from "../Layouts/DashboardLayout";
+import DonorHome from "../pages/Dashboard/DonorHome";
+import MyDonationRequests from "../pages/Dashboard/MyDonationRequests";
+import CreateDonationRequest from "../pages/Dashboard/CreateDonationRequest";
 
 export const router = createBrowserRouter([
   {
@@ -22,6 +26,19 @@ export const router = createBrowserRouter([
           </PrivateRoute>
         ),
       },
+    ],
+  },
+  {
+    path: "/dashboard",
+    element: (
+      <PrivateRoute>
+        <DashboardLayout />
+      </PrivateRoute>
+    ),
+    children: [
+      { index: true, element: <DonorHome /> },
+      { path: "my-donation-requests", element: <MyDonationRequests /> },
+      { path: "create-donation-request", element: <CreateDonationRequest /> },
     ],
   },
   { path: "/login", element: <Login /> },

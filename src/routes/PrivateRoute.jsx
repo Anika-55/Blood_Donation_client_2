@@ -1,16 +1,18 @@
-// components/PrivateRoute.jsx
-import React from "react";
 import { Navigate } from "react-router-dom";
 
-export default function PrivateRoute({ children }) {
-  // Check if user is logged in (example: using localStorage token)
+export default function PrivateRoute({ children, role }) {
   const token = localStorage.getItem("accessToken");
+  const user = JSON.parse(localStorage.getItem("user"));
 
-  // If token exists, render the children (the protected page)
-  if (token) {
-    return children;
+  // Not logged in
+  if (!token) {
+    return <Navigate to="/login" replace />;
   }
 
-  // Otherwise, redirect to login
-  return <Navigate to="/login" replace />;
+  // Role mismatch (optional)
+  if (role && user?.role !== role) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
 }

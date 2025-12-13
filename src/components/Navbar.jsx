@@ -23,7 +23,7 @@ export default function Navbar() {
       path: "/donations",
       icon: <FaHandHoldingHeart />,
     },
-    { name: "Donors", path: "/donors", icon: <FaUsers /> },
+    { name: "Donate", path: "/donate-money", icon: <FaUsers /> },
     { name: "Dashboard", path: "/dashboard", icon: <MdDashboardCustomize /> },
     { name: "Contact", path: "/contact", icon: <FaPhone /> },
   ];
