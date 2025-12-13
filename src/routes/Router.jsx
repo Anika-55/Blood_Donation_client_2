@@ -10,6 +10,7 @@ import DashboardLayout from "../Layouts/DashboardLayout";
 import DonorHome from "../pages/Dashboard/DonorHome";
 import MyDonationRequests from "../pages/Dashboard/MyDonationRequests";
 import CreateDonationRequest from "../pages/Dashboard/CreateDonationRequest";
+import DonateForm from "../pages/Donate/DonateForm";
 
 export const router = createBrowserRouter([
   {
@@ -25,6 +26,10 @@ export const router = createBrowserRouter([
             <DonationDetails />
           </PrivateRoute>
         ),
+      },
+      {
+        path: "donate",
+        element: <DonateForm />,
       },
     ],
   },
