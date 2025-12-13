@@ -11,6 +11,7 @@ import DonorHome from "../pages/Dashboard/DonorHome";
 import MyDonationRequests from "../pages/Dashboard/MyDonationRequests";
 import CreateDonationRequest from "../pages/Dashboard/CreateDonationRequest";
 import DonateForm from "../pages/Donate/DonateForm";
+import MyDonationRequestView from "../pages/Dashboard/MyDonationRequestView";
 
 export const router = createBrowserRouter([
   {
@@ -44,6 +45,10 @@ export const router = createBrowserRouter([
       { index: true, element: <DonorHome /> },
       { path: "my-donation-requests", element: <MyDonationRequests /> },
       { path: "create-donation-request", element: <CreateDonationRequest /> },
+      {
+        path: "/dashboard/donor/donation/:id",
+        element: <MyDonationRequestView />,
+      },
     ],
   },
   { path: "/login", element: <Login /> },

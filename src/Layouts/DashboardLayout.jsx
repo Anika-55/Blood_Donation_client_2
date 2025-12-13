@@ -9,15 +9,21 @@ import {
   FaUser,
   FaSignOutAlt,
 } from "react-icons/fa";
+import { MdDashboardCustomize } from "react-icons/md";
 
 export default function DashboardLayout() {
   const [open, setOpen] = useState(false);
 
   const menu = [
     {
+      name: "Home",
+      path: "/",
+      icon: <FaHome />,
+    },
+    {
       name: "Dashboard",
       path: "/dashboard",
-      icon: <FaHome />,
+      icon: <MdDashboardCustomize />,
     },
     {
       name: "My Requests",
