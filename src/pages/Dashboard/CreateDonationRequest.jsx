@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaHospital, FaUser, FaTint, FaClock } from "react-icons/fa";
+import api from "../../api/axios"; // Axios instance with baseURL = http://localhost:5000/api
 
 export default function CreateDonationRequest() {
   const navigate = useNavigate();
-
   const user = JSON.parse(localStorage.getItem("user"));
   const token = localStorage.getItem("accessToken");
 
@@ -15,7 +15,7 @@ export default function CreateDonationRequest() {
     recipientName: "",
     recipientDistrict: "",
     recipientUpazila: "",
-    hospital: "",
+    hospitalName: "",
     address: "",
     bloodGroup: "",
     donationDate: "",
@@ -26,8 +26,10 @@ export default function CreateDonationRequest() {
   const districts = ["Dhaka", "Chattogram", "Rajshahi"];
   const upazilas = ["Dhanmondi", "Mirpur", "Uttara"];
 
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,27 +41,16 @@ export default function CreateDonationRequest() {
     }
 
     setLoading(true);
-
     try {
-      const res = await fetch("http://localhost:5000/api/donations", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.message || "Failed to submit request");
-        return;
-      }
-
+      await api.post(
+        "/donor", // Matches backend route
+        formData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       navigate("/dashboard/my-donation-requests");
     } catch (err) {
-      setError("Server error. Try again later.");
+      console.error(err);
+      setError(err.response?.data?.message || "Server error");
     } finally {
       setLoading(false);
     }
@@ -67,7 +58,6 @@ export default function CreateDonationRequest() {
 
   return (
     <div className="max-w-6xl mx-auto px-4">
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800">
           Create Donation Request
@@ -81,14 +71,12 @@ export default function CreateDonationRequest() {
         onSubmit={handleSubmit}
         className="bg-white rounded-2xl shadow-xl p-6 md:p-10"
       >
-        {/* Error */}
         {error && (
           <div className="mb-6 bg-red-100 text-red-700 px-4 py-3 rounded-lg">
             {error}
           </div>
         )}
 
-        {/* Requester Info */}
         <Section title="Requester Information" icon={<FaUser />}>
           <div className="grid md:grid-cols-2 gap-6">
             <ReadOnly label="Name" value={user?.name} />
@@ -96,45 +84,74 @@ export default function CreateDonationRequest() {
           </div>
         </Section>
 
-        {/* Recipient Info */}
         <Section title="Recipient Details" icon={<FaTint />}>
           <div className="grid md:grid-cols-2 gap-6">
-            <Input label="Recipient Name" name="recipientName" />
+            <Input
+              label="Recipient Name"
+              name="recipientName"
+              value={formData.recipientName}
+              onChange={handleChange}
+            />
             <Select
               label="Blood Group"
               name="bloodGroup"
+              value={formData.bloodGroup}
+              onChange={handleChange}
               options={["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]}
             />
             <Select
               label="District"
               name="recipientDistrict"
+              value={formData.recipientDistrict}
+              onChange={handleChange}
               options={districts}
             />
             <Select
               label="Upazila"
               name="recipientUpazila"
+              value={formData.recipientUpazila}
+              onChange={handleChange}
               options={upazilas}
             />
           </div>
         </Section>
 
-        {/* Location */}
         <Section title="Hospital & Location" icon={<FaHospital />}>
           <div className="grid md:grid-cols-2 gap-6">
-            <Input label="Hospital Name" name="hospital" />
-            <Input label="Full Address" name="address" />
+            <Input
+              label="Hospital Name"
+              name="hospitalName"
+              value={formData.hospitalName}
+              onChange={handleChange}
+            />
+            <Input
+              label="Full Address"
+              name="address"
+              value={formData.address}
+              onChange={handleChange}
+            />
           </div>
         </Section>
 
-        {/* Time */}
         <Section title="Donation Schedule" icon={<FaClock />}>
           <div className="grid md:grid-cols-2 gap-6">
-            <Input label="Donation Date" type="date" name="donationDate" />
-            <Input label="Donation Time" type="time" name="donationTime" />
+            <Input
+              label="Donation Date"
+              type="date"
+              name="donationDate"
+              value={formData.donationDate}
+              onChange={handleChange}
+            />
+            <Input
+              label="Donation Time"
+              type="time"
+              name="donationTime"
+              value={formData.donationTime}
+              onChange={handleChange}
+            />
           </div>
         </Section>
 
-        {/* Message */}
         <div className="mt-8">
           <label className="block font-medium mb-2">Additional Message</label>
           <textarea
@@ -147,7 +164,6 @@ export default function CreateDonationRequest() {
           />
         </div>
 
-        {/* Submit */}
         <div className="mt-10 flex justify-end">
           <button
             disabled={loading}
@@ -163,67 +179,65 @@ export default function CreateDonationRequest() {
       </form>
     </div>
   );
+}
 
-  /* =================== Components =================== */
+function Section({ title, icon, children }) {
+  return (
+    <div className="mb-10">
+      <h2 className="flex items-center gap-2 text-lg font-semibold mb-4 text-gray-700">
+        <span className="text-red-600">{icon}</span>
+        {title}
+      </h2>
+      {children}
+    </div>
+  );
+}
 
-  function Section({ title, icon, children }) {
-    return (
-      <div className="mb-10">
-        <h2 className="flex items-center gap-2 text-lg font-semibold mb-4 text-gray-700">
-          <span className="text-red-600">{icon}</span>
-          {title}
-        </h2>
-        {children}
-      </div>
-    );
-  }
+function Input({ label, name, type = "text", value, onChange }) {
+  return (
+    <div>
+      <label className="block font-medium mb-1">{label}</label>
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        required
+        className="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-500 outline-none"
+      />
+    </div>
+  );
+}
 
-  function Input({ label, name, type = "text" }) {
-    return (
-      <div>
-        <label className="block font-medium mb-1">{label}</label>
-        <input
-          type={type}
-          name={name}
-          value={formData[name]}
-          onChange={handleChange}
-          required
-          className="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-500 outline-none"
-        />
-      </div>
-    );
-  }
+function Select({ label, name, options, value, onChange }) {
+  return (
+    <div>
+      <label className="block font-medium mb-1">{label}</label>
+      <select
+        name={name}
+        value={value}
+        onChange={onChange}
+        required
+        className="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-500 outline-none"
+      >
+        <option value="">Select {label}</option>
+        {options.map((op) => (
+          <option key={op}>{op}</option>
+        ))}
+      </select>
+    </div>
+  );
+}
 
-  function Select({ label, name, options }) {
-    return (
-      <div>
-        <label className="block font-medium mb-1">{label}</label>
-        <select
-          name={name}
-          value={formData[name]}
-          onChange={handleChange}
-          required
-          className="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-500 outline-none"
-        >
-          <option value="">Select {label}</option>
-          {options.map((op) => (
-            <option key={op}>{op}</option>
-          ))}
-        </select>
-      </div>
-    );
-  }
-
-  function ReadOnly({ label, value }) {
-    return (
-      <div>
-        <label className="block font-medium mb-1">{label}</label>
-        <input
-          value={value || ""}
-          readOnly
-          className="w-full bg-gray-100 border rounded-xl px-4 py-3 cursor-not-allowed"
-        />
-      </div>
-    );
-  }
+function ReadOnly({ label, value }) {
+  return (
+    <div>
+      <label className="block font-medium mb-1">{label}</label>
+      <input
+        value={value || ""}
+        readOnly
+        className="w-full bg-gray-100 border rounded-xl px-4 py-3 cursor-not-allowed"
+      />
+    </div>
+  );
 }
