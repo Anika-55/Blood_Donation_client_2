@@ -8,7 +8,7 @@ const DonateSuccess = () => {
 
   useEffect(() => {
     if (donationId) {
-      axiosInstance.patch("/money-donations/update-status", {
+      axiosInstance.patch("/api/money-donations/update-status", {
         donationId,
         status: "succeeded",
       });

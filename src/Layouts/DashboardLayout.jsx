@@ -8,23 +8,23 @@ import {
   FaPlusCircle,
   FaUser,
   FaSignOutAlt,
+  FaUsers,
+  FaMoneyBillWave,
+  FaClipboardList,
 } from "react-icons/fa";
 import { MdDashboardCustomize } from "react-icons/md";
 
 export default function DashboardLayout() {
   const [open, setOpen] = useState(false);
 
-  const menu = [
-    {
-      name: "Home",
-      path: "/",
-      icon: <FaHome />,
-    },
-    {
-      name: "Dashboard",
-      path: "/dashboard",
-      icon: <MdDashboardCustomize />,
-    },
+  // get user role from localStorage (assume it's stored after login)
+  const user = JSON.parse(localStorage.getItem("user")) || {};
+  const role = user.role || "donor"; // default to donor
+
+  // Donor menu
+  const donorMenu = [
+    { name: "Home", path: "/", icon: <FaHome /> },
+    { name: "Dashboard", path: "/dashboard", icon: <MdDashboardCustomize /> },
     {
       name: "My Requests",
       path: "/dashboard/my-donation-requests",
@@ -35,12 +35,28 @@ export default function DashboardLayout() {
       path: "/dashboard/create-donation-request",
       icon: <FaPlusCircle />,
     },
-    {
-      name: "Profile",
-      path: "/dashboard/profile",
-      icon: <FaUser />,
-    },
+    { name: "Profile", path: "/dashboard/profile", icon: <FaUser /> },
   ];
+
+  // Admin menu
+  const adminMenu = [
+    { name: "Home", path: "/", icon: <FaHome /> },
+    { name: "Dashboard", path: "/dashboard", icon: <MdDashboardCustomize /> },
+    { name: "All Users", path: "/dashboard/all-users", icon: <FaUsers /> },
+    {
+      name: "All Donation Requests",
+      path: "/dashboard/all-blood-donation-request",
+      icon: <FaClipboardList />,
+    },
+    {
+      name: "Total Funds",
+      path: "/dashboard/total-funds",
+      icon: <FaMoneyBillWave />,
+    },
+    { name: "Profile", path: "/dashboard/profile", icon: <FaUser /> },
+  ];
+
+  const menu = role === "admin" ? adminMenu : donorMenu;
 
   return (
     <div className="min-h-screen flex bg-gray-100">
