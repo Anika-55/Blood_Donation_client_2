@@ -15,9 +15,10 @@ import MyDonationRequestView from "../pages/Dashboard/MyDonationRequestView";
 import BloodDonationRequests from "../pages/Requests/BloodDonationRequests";
 import DonateSuccess from "../pages/Donate/DonateSuccess";
 import DonateCancel from "../pages/Donate/DonateCancel";
-import AdminHome from "../pages/Dashboard/HomeAdmin";
+import HomeAdmin from "../pages/Dashboard/HomeAdmin";
 import AllUsers from "../pages/Dashboard/AllUsers";
 import AllBloodDonationRequests from "../pages/Dashboard/AllBloodDonationRequests";
+import RoleBasedDashboardHome from "../pages/Dashboard/RoleBasedDashboardHome";
 
 export const router = createBrowserRouter([
   {
@@ -47,7 +48,7 @@ export const router = createBrowserRouter([
       </PrivateRoute>
     ),
     children: [
-      { index: true, element: <DonorHome /> },
+      { index: true, element: <RoleBasedDashboardHome /> },
       { path: "my-donation-requests", element: <MyDonationRequests /> },
       { path: "create-donation-request", element: <CreateDonationRequest /> },
       {
@@ -55,7 +56,7 @@ export const router = createBrowserRouter([
         element: <MyDonationRequestView />,
       },
       // Admin routes
-      { path: "admin", element: <AdminHome /> },
+      { path: "admin", element: <HomeAdmin /> },
       { path: "all-users", element: <AllUsers /> },
       {
         path: "all-blood-donation-request",

@@ -1,48 +1,261 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api/axios";
+import { FaLock, FaUnlock, FaUserPlus, FaUserShield } from "react-icons/fa";
+
+/* ---------- Gradient Presets ---------- */
+const gradients = {
+  red: "from-red-500 to-rose-600",
+  green: "from-emerald-500 to-green-600",
+  blue: "from-sky-500 to-blue-600",
+  purple: "from-violet-500 to-purple-600",
+};
 
 export default function AllUsers() {
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("");
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("accessToken");
+      const res = await api.get(
+        `/admin/users${filter ? `?status=${filter}` : ""}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setUsers(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    api
-      .get("/admin/users", { headers: { Authorization: `Bearer ${token}` } })
-      .then((res) => setUsers(res.data))
-      .catch((err) => console.error(err));
-  }, []);
+    fetchUsers();
+  }, [filter]);
+
+  const handleAction = async (id, action) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      await api.patch(
+        `/admin/users/${id}/${action}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      fetchUsers();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  if (loading)
+    return (
+      <p className="text-center mt-20 text-gray-500 animate-pulse">
+        Loading users...
+      </p>
+    );
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-4">All Users</h2>
-      <table className="min-w-full bg-white shadow rounded">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="p-2">Avatar</th>
-            <th className="p-2">Name</th>
-            <th className="p-2">Email</th>
-            <th className="p-2">Role</th>
-            <th className="p-2">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((u) => (
-            <tr key={u._id} className="border-b">
-              <td className="p-2">
-                <img
-                  src={u.avatar || "/default.png"}
-                  alt="avatar"
-                  className="w-10 h-10 rounded-full"
-                />
-              </td>
-              <td className="p-2">{u.name}</td>
-              <td className="p-2">{u.email}</td>
-              <td className="p-2 capitalize">{u.role}</td>
-              <td className="p-2 capitalize">{u.status}</td>
+    <div className="max-w-7xl mx-auto p-4 md:p-6">
+      {/* Header */}
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-red-500 to-rose-600 bg-clip-text text-transparent">
+          User Management
+        </h2>
+        <p className="text-gray-500 text-sm mt-1">
+          Manage roles and access permissions
+        </p>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap gap-3 mb-6">
+        {["", "active", "blocked"].map((status) => (
+          <button
+            key={status}
+            onClick={() => setFilter(status)}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition shadow-sm ${
+              filter === status
+                ? "bg-gradient-to-r from-red-500 to-rose-600 text-white"
+                : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+            }`}
+          >
+            {status === ""
+              ? "All Users"
+              : status.charAt(0).toUpperCase() + status.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      {/* ================= DESKTOP TABLE ================= */}
+      <div className="hidden md:block overflow-x-auto">
+        <table className="min-w-full bg-white rounded-xl shadow-sm overflow-hidden">
+          <thead className="bg-gray-50 text-gray-600 text-sm">
+            <tr>
+              <th className="p-4 text-left">User</th>
+              <th className="p-4">Role</th>
+              <th className="p-4">Status</th>
+              <th className="p-4 text-center">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {users.map((u) => (
+              <tr key={u._id} className="border-t hover:bg-gray-50 transition">
+                <td className="p-4 flex items-center gap-3">
+                  <img
+                    src={u.avatar || "/default.png"}
+                    className="w-11 h-11 rounded-full ring-2 ring-gray-200"
+                  />
+                  <div>
+                    <p className="font-semibold">{u.name}</p>
+                    <p className="text-sm text-gray-500">{u.email}</p>
+                  </div>
+                </td>
+
+                <td className="p-4 capitalize">{u.role}</td>
+
+                <td className="p-4">
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      u.status === "active"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
+                    }`}
+                  >
+                    {u.status}
+                  </span>
+                </td>
+
+                <td className="p-4">
+                  <div className="flex justify-center gap-2 flex-wrap">
+                    {u.status === "active" && (
+                      <ActionBtn
+                        gradient="red"
+                        icon={<FaLock />}
+                        label="Block"
+                        onClick={() => handleAction(u._id, "block")}
+                      />
+                    )}
+                    {u.status === "blocked" && (
+                      <ActionBtn
+                        gradient="green"
+                        icon={<FaUnlock />}
+                        label="Unblock"
+                        onClick={() => handleAction(u._id, "unblock")}
+                      />
+                    )}
+                    {u.role !== "volunteer" && (
+                      <ActionBtn
+                        gradient="blue"
+                        icon={<FaUserPlus />}
+                        label="Volunteer"
+                        onClick={() => handleAction(u._id, "make-volunteer")}
+                      />
+                    )}
+                    {u.role !== "admin" && (
+                      <ActionBtn
+                        gradient="purple"
+                        icon={<FaUserShield />}
+                        label="Admin"
+                        onClick={() => handleAction(u._id, "make-admin")}
+                      />
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* ================= MOBILE CARDS ================= */}
+      <div className="md:hidden space-y-4">
+        {users.map((u) => (
+          <div
+            key={u._id}
+            className="bg-white rounded-xl shadow-sm p-4 space-y-4"
+          >
+            <div className="flex items-center gap-3">
+              <img
+                src={u.avatar || "/default.png"}
+                className="w-12 h-12 rounded-full ring-2 ring-gray-200"
+              />
+              <div>
+                <p className="font-semibold">{u.name}</p>
+                <p className="text-sm text-gray-500">{u.email}</p>
+              </div>
+            </div>
+
+            <div className="flex justify-between text-sm">
+              <span>
+                <strong>Role:</strong> {u.role}
+              </span>
+              <span>
+                <strong>Status:</strong> {u.status}
+              </span>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {u.status === "active" && (
+                <MobileBtn
+                  gradient="red"
+                  label="Block"
+                  onClick={() => handleAction(u._id, "block")}
+                />
+              )}
+              {u.status === "blocked" && (
+                <MobileBtn
+                  gradient="green"
+                  label="Unblock"
+                  onClick={() => handleAction(u._id, "unblock")}
+                />
+              )}
+              {u.role !== "volunteer" && (
+                <MobileBtn
+                  gradient="blue"
+                  label="Volunteer"
+                  onClick={() => handleAction(u._id, "make-volunteer")}
+                />
+              )}
+              {u.role !== "admin" && (
+                <MobileBtn
+                  gradient="purple"
+                  label="Admin"
+                  onClick={() => handleAction(u._id, "make-admin")}
+                />
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
+  );
+}
+
+/* ---------- Buttons ---------- */
+
+function ActionBtn({ gradient, icon, label, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-white text-sm
+        bg-gradient-to-r ${gradients[gradient]}
+        hover:opacity-90 transition shadow-sm`}
+    >
+      {icon} {label}
+    </button>
+  );
+}
+
+function MobileBtn({ gradient, label, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3 py-2 rounded-md text-white text-sm
+        bg-gradient-to-r ${gradients[gradient]}
+        hover:opacity-90 transition`}
+    >
+      {label}
+    </button>
   );
 }
