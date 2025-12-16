@@ -1,8 +1,8 @@
-// pages/Admin/AllDonationRequests.jsx
 import React, { useEffect, useState } from "react";
-import api from "../../api/axios"; // your axios instance
+import api from "../../api/axios";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
+import { useNavigate } from "react-router-dom";
 
 const MySwal = withReactContent(Swal);
 
@@ -15,6 +15,7 @@ export default function AllDonationRequests() {
   const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem("accessToken");
+  const navigate = useNavigate();
 
   const fetchRequests = async () => {
     setLoading(true);
@@ -72,12 +73,38 @@ export default function AllDonationRequests() {
     }
   };
 
+  const handleStatusUpdate = async (id, newStatus) => {
+    try {
+      await api.patch(
+        `/admin/donations/${id}/status`,
+        { status: newStatus },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setRequests((prev) =>
+        prev.map((req) =>
+          req._id === id ? { ...req, status: newStatus } : req
+        )
+      );
+
+      MySwal.fire(
+        "Success",
+        `Donation request has been marked as ${newStatus}.`,
+        "success"
+      );
+    } catch (err) {
+      console.error(err);
+      MySwal.fire("Error", "Status update failed", "error");
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto py-10 px-4">
       <h2 className="text-3xl font-bold mb-6 text-red-600 text-center">
         All Blood Donation Requests
       </h2>
 
+      {/* Filter */}
       <div className="mb-6 flex flex-col md:flex-row md:items-center gap-4">
         <div className="flex items-center gap-2">
           <label className="font-medium">Filter by status:</label>
@@ -118,7 +145,7 @@ export default function AllDonationRequests() {
                 ].map((th) => (
                   <th
                     key={th}
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
                     {th}
                   </th>
@@ -128,22 +155,16 @@ export default function AllDonationRequests() {
             <tbody className="divide-y divide-gray-200">
               {requests.map((req) => (
                 <tr key={req._id} className="hover:bg-gray-50 transition">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {req.recipientName}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-4 py-2">{req.recipientName}</td>
+                  <td className="px-4 py-2">
                     {req.recipientDistrict}, {req.recipientUpazila}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-4 py-2">
                     {new Date(req.donationDate).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {req.donationTime}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {req.bloodGroup}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-4 py-2">{req.donationTime}</td>
+                  <td className="px-4 py-2">{req.bloodGroup}</td>
+                  <td className="px-4 py-2">
                     <span
                       className={`px-2 py-1 rounded-full text-sm font-semibold ${
                         req.status === "done"
@@ -156,7 +177,38 @@ export default function AllDonationRequests() {
                       {req.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap flex flex-wrap gap-2">
+                  <td className="px-4 py-2 flex flex-wrap gap-2">
+                    {/* View button */}
+                    <button
+                      onClick={() =>
+                        navigate(`/dashboard/admin/donation/${req._id}`)
+                      }
+                      className="text-blue-600 hover:underline"
+                    >
+                      View
+                    </button>
+
+                    {req.status === "pending" && (
+                      <>
+                        <button
+                          onClick={() =>
+                            handleStatusUpdate(req._id, "inprogress")
+                          }
+                          className="text-green-600 hover:underline"
+                        >
+                          Resolve
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleStatusUpdate(req._id, "canceled")
+                          }
+                          className="text-red-600 hover:underline"
+                        >
+                          Reject
+                        </button>
+                      </>
+                    )}
+
                     <button
                       onClick={() => handleDelete(req._id)}
                       className="text-red-600 hover:underline"
@@ -172,7 +224,7 @@ export default function AllDonationRequests() {
       )}
 
       {/* Pagination */}
-      <div className="mt-4 flex items-center justify-center gap-4">
+      <div className="mt-4 flex items-center justify-center gap-4 flex-wrap">
         <button
           disabled={page <= 1}
           onClick={() => setPage((p) => p - 1)}

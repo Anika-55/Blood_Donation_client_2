@@ -53,11 +53,16 @@ export const router = createBrowserRouter([
       { path: "create-donation-request", element: <CreateDonationRequest /> },
       {
         path: "/dashboard/donor/donation/:id",
-        element: <MyDonationRequestView />,
+        element: <MyDonationRequestView isAdmin={false} />,
       },
       // Admin routes
       { path: "admin", element: <HomeAdmin /> },
       { path: "all-users", element: <AllUsers /> },
+      {
+        path: "/dashboard/admin/donation/:id",
+        element: <MyDonationRequestView isAdmin={true} />,
+      },
+
       {
         path: "all-blood-donation-request",
         element: <AllBloodDonationRequests />,

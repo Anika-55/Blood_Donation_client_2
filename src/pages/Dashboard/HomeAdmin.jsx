@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { FaUsers, FaDonate, FaTint } from "react-icons/fa";
+import { FaUsers, FaTint } from "react-icons/fa";
 import api from "../../api/axios";
 
 export default function AdminDashboardHome() {
   const [stats, setStats] = useState({
     totalUsers: 0,
-    totalFunds: 0,
     totalBloodRequests: 0,
   });
   const [loading, setLoading] = useState(true);
@@ -17,7 +16,11 @@ export default function AdminDashboardHome() {
         const res = await api.get("/admin/stats", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setStats(res.data);
+        // Only pick totalUsers and totalBloodRequests
+        setStats({
+          totalUsers: res.data.totalUsers,
+          totalBloodRequests: res.data.totalBloodRequests,
+        });
         setLoading(false);
       } catch (err) {
         console.error("Error fetching admin stats:", err);
@@ -36,16 +39,11 @@ export default function AdminDashboardHome() {
       <h1 className="text-4xl font-bold text-red-600 mb-6">Admin Dashboard</h1>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
         <div className="bg-white shadow-md rounded-lg p-6 flex flex-col items-center">
           <FaUsers className="text-red-600 text-5xl mb-4" />
           <p className="text-3xl font-bold">{stats.totalUsers}</p>
           <p className="text-gray-700 mt-1">Total Users</p>
-        </div>
-        <div className="bg-white shadow-md rounded-lg p-6 flex flex-col items-center">
-          <FaDonate className="text-green-600 text-5xl mb-4" />
-          <p className="text-3xl font-bold">${stats.totalFunds}</p>
-          <p className="text-gray-700 mt-1">Total Funding</p>
         </div>
         <div className="bg-white shadow-md rounded-lg p-6 flex flex-col items-center">
           <FaTint className="text-blue-600 text-5xl mb-4" />
@@ -55,15 +53,12 @@ export default function AdminDashboardHome() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <button className="bg-red-600 text-white py-2 rounded hover:bg-red-700 transition">
           Manage Users
         </button>
         <button className="bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
           View All Donation Requests
-        </button>
-        <button className="bg-green-600 text-white py-2 rounded hover:bg-green-700 transition">
-          Add Funding
         </button>
       </div>
     </div>

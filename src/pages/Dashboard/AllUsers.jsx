@@ -1,19 +1,26 @@
 import React, { useEffect, useState } from "react";
 import api from "../../api/axios";
-import { FaLock, FaUnlock, FaUserPlus, FaUserShield } from "react-icons/fa";
+import {
+  FaLock,
+  FaUnlock,
+  FaUserPlus,
+  FaUserShield,
+  FaEllipsisV,
+} from "react-icons/fa";
 
 /* ---------- Gradient Presets ---------- */
 const gradients = {
-  red: "from-red-500 to-rose-600",
-  green: "from-emerald-500 to-green-600",
+  red: "from-pink-500 to-rose-600",
+  green: "from-emerald-400 to-green-600",
   blue: "from-sky-500 to-blue-600",
-  purple: "from-violet-500 to-purple-600",
+  purple: "from-violet-400 to-purple-500",
 };
 
 export default function AllUsers() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("");
+  const [openDropdownId, setOpenDropdownId] = useState(null); // track which user dropdown is open
 
   const fetchUsers = async () => {
     try {
@@ -21,7 +28,9 @@ export default function AllUsers() {
       const token = localStorage.getItem("accessToken");
       const res = await api.get(
         `/admin/users${filter ? `?status=${filter}` : ""}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
       setUsers(res.data);
     } catch (err) {
@@ -41,9 +50,12 @@ export default function AllUsers() {
       await api.patch(
         `/admin/users/${id}/${action}`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
       fetchUsers();
+      setOpenDropdownId(null); // close dropdown after action
     } catch (err) {
       console.error(err);
     }
@@ -87,7 +99,7 @@ export default function AllUsers() {
         ))}
       </div>
 
-      {/* ================= DESKTOP TABLE ================= */}
+      {/* Desktop Table */}
       <div className="hidden md:block overflow-x-auto">
         <table className="min-w-full bg-white rounded-xl shadow-sm overflow-hidden">
           <thead className="bg-gray-50 text-gray-600 text-sm">
@@ -100,7 +112,10 @@ export default function AllUsers() {
           </thead>
           <tbody>
             {users.map((u) => (
-              <tr key={u._id} className="border-t hover:bg-gray-50 transition">
+              <tr
+                key={u._id}
+                className="border-t hover:bg-gray-50 transition relative"
+              >
                 <td className="p-4 flex items-center gap-3">
                   <img
                     src={u.avatar || "/default.png"}
@@ -111,9 +126,7 @@ export default function AllUsers() {
                     <p className="text-sm text-gray-500">{u.email}</p>
                   </div>
                 </td>
-
                 <td className="p-4 capitalize">{u.role}</td>
-
                 <td className="p-4">
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -126,41 +139,53 @@ export default function AllUsers() {
                   </span>
                 </td>
 
-                <td className="p-4">
-                  <div className="flex justify-center gap-2 flex-wrap">
-                    {u.status === "active" && (
-                      <ActionBtn
-                        gradient="red"
-                        icon={<FaLock />}
-                        label="Block"
-                        onClick={() => handleAction(u._id, "block")}
-                      />
-                    )}
-                    {u.status === "blocked" && (
-                      <ActionBtn
-                        gradient="green"
-                        icon={<FaUnlock />}
-                        label="Unblock"
-                        onClick={() => handleAction(u._id, "unblock")}
-                      />
-                    )}
-                    {u.role !== "volunteer" && (
-                      <ActionBtn
-                        gradient="blue"
-                        icon={<FaUserPlus />}
-                        label="Volunteer"
-                        onClick={() => handleAction(u._id, "make-volunteer")}
-                      />
-                    )}
-                    {u.role !== "admin" && (
-                      <ActionBtn
-                        gradient="purple"
-                        icon={<FaUserShield />}
-                        label="Admin"
-                        onClick={() => handleAction(u._id, "make-admin")}
-                      />
-                    )}
-                  </div>
+                {/* Action Dropdown */}
+                <td className="p-4 text-center relative">
+                  <button
+                    onClick={() =>
+                      setOpenDropdownId(openDropdownId === u._id ? null : u._id)
+                    }
+                    className="p-2 rounded-full hover:bg-gray-100 transition"
+                  >
+                    <FaEllipsisV />
+                  </button>
+
+                  {openDropdownId === u._id && (
+                    <div className="absolute right-0 mt-2 w-40 bg-white border rounded-md shadow-lg z-50">
+                      {u.status === "active" && (
+                        <DropdownItem
+                          color="red"
+                          label="Block"
+                          onClick={() => handleAction(u._id, "block")}
+                          icon={<FaLock />}
+                        />
+                      )}
+                      {u.status === "blocked" && (
+                        <DropdownItem
+                          color="green"
+                          label="Unblock"
+                          onClick={() => handleAction(u._id, "unblock")}
+                          icon={<FaUnlock />}
+                        />
+                      )}
+                      {u.role !== "volunteer" && (
+                        <DropdownItem
+                          color="blue"
+                          label="Make Volunteer"
+                          onClick={() => handleAction(u._id, "make-volunteer")}
+                          icon={<FaUserPlus />}
+                        />
+                      )}
+                      {u.role !== "admin" && (
+                        <DropdownItem
+                          color="purple"
+                          label="Make Admin"
+                          onClick={() => handleAction(u._id, "make-admin")}
+                          icon={<FaUserShield />}
+                        />
+                      )}
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}
@@ -168,12 +193,12 @@ export default function AllUsers() {
         </table>
       </div>
 
-      {/* ================= MOBILE CARDS ================= */}
+      {/* Mobile Cards */}
       <div className="md:hidden space-y-4">
         {users.map((u) => (
           <div
             key={u._id}
-            className="bg-white rounded-xl shadow-sm p-4 space-y-4"
+            className="bg-white rounded-xl shadow-sm p-4 space-y-4 relative"
           >
             <div className="flex items-center gap-3">
               <img
@@ -183,6 +208,55 @@ export default function AllUsers() {
               <div>
                 <p className="font-semibold">{u.name}</p>
                 <p className="text-sm text-gray-500">{u.email}</p>
+              </div>
+
+              {/* Mobile Dropdown */}
+              <div className="ml-auto relative">
+                <button
+                  onClick={() =>
+                    setOpenDropdownId(openDropdownId === u._id ? null : u._id)
+                  }
+                  className="p-2 rounded-full hover:bg-gray-100 transition"
+                >
+                  <FaEllipsisV />
+                </button>
+
+                {openDropdownId === u._id && (
+                  <div className="absolute right-0 mt-2 w-40 bg-white border rounded-md shadow-lg z-50">
+                    {u.status === "active" && (
+                      <DropdownItem
+                        color="red"
+                        label="Block"
+                        onClick={() => handleAction(u._id, "block")}
+                        icon={<FaLock />}
+                      />
+                    )}
+                    {u.status === "blocked" && (
+                      <DropdownItem
+                        color="green"
+                        label="Unblock"
+                        onClick={() => handleAction(u._id, "unblock")}
+                        icon={<FaUnlock />}
+                      />
+                    )}
+                    {u.role !== "volunteer" && (
+                      <DropdownItem
+                        color="blue"
+                        label="Make Volunteer"
+                        onClick={() => handleAction(u._id, "make-volunteer")}
+                        icon={<FaUserPlus />}
+                      />
+                    )}
+                    {u.role !== "admin" && (
+                      <DropdownItem
+                        color="purple"
+                        label="Make Admin"
+                        onClick={() => handleAction(u._id, "make-admin")}
+                        icon={<FaUserShield />}
+                      />
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -194,37 +268,6 @@ export default function AllUsers() {
                 <strong>Status:</strong> {u.status}
               </span>
             </div>
-
-            <div className="flex flex-wrap gap-2">
-              {u.status === "active" && (
-                <MobileBtn
-                  gradient="red"
-                  label="Block"
-                  onClick={() => handleAction(u._id, "block")}
-                />
-              )}
-              {u.status === "blocked" && (
-                <MobileBtn
-                  gradient="green"
-                  label="Unblock"
-                  onClick={() => handleAction(u._id, "unblock")}
-                />
-              )}
-              {u.role !== "volunteer" && (
-                <MobileBtn
-                  gradient="blue"
-                  label="Volunteer"
-                  onClick={() => handleAction(u._id, "make-volunteer")}
-                />
-              )}
-              {u.role !== "admin" && (
-                <MobileBtn
-                  gradient="purple"
-                  label="Admin"
-                  onClick={() => handleAction(u._id, "make-admin")}
-                />
-              )}
-            </div>
           </div>
         ))}
       </div>
@@ -232,30 +275,14 @@ export default function AllUsers() {
   );
 }
 
-/* ---------- Buttons ---------- */
-
-function ActionBtn({ gradient, icon, label, onClick }) {
+/* ---------- Dropdown Item ---------- */
+function DropdownItem({ color, label, onClick, icon }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-1 px-3 py-1.5 rounded-md text-white text-sm
-        bg-gradient-to-r ${gradients[gradient]}
-        hover:opacity-90 transition shadow-sm`}
+      className={`flex items-center gap-2 px-3 py-2 w-full text-sm text-white bg-gradient-to-r ${gradients[color]} hover:opacity-90 transition`}
     >
       {icon} {label}
-    </button>
-  );
-}
-
-function MobileBtn({ gradient, label, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`px-3 py-2 rounded-md text-white text-sm
-        bg-gradient-to-r ${gradients[gradient]}
-        hover:opacity-90 transition`}
-    >
-      {label}
     </button>
   );
 }

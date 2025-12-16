@@ -9,32 +9,35 @@ export default function MyDonationRequestView() {
 
   const [request, setRequest] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [userRole, setUserRole] = useState("donor"); // default donor
 
   useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user?.role === "admin") setUserRole("admin");
     fetchRequest();
     // eslint-disable-next-line
   }, []);
 
   const fetchRequest = async () => {
+    setLoading(true);
     try {
-      const res = await api.get(`/donor/${id}`, {
+      const endpoint =
+        userRole === "admin" ? `/admin/donations/${id}` : `/donor/${id}`;
+      const res = await api.get(endpoint, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setRequest(res.data);
     } catch (err) {
       console.error(err);
+      setRequest(null);
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) {
-    return <p className="text-center mt-10">Loading...</p>;
-  }
-
-  if (!request) {
+  if (loading) return <p className="text-center mt-10">Loading...</p>;
+  if (!request)
     return <p className="text-center mt-10 text-red-500">Request not found</p>;
-  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -103,7 +106,6 @@ export default function MyDonationRequestView() {
   );
 }
 
-/* Small reusable component */
 function Info({ label, value, highlight }) {
   return (
     <div>
