@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { MdDashboardCustomize } from "react-icons/md";
 import {
@@ -6,37 +6,44 @@ import {
   FaTimes,
   FaHome,
   FaHandHoldingHeart,
-  FaUsers,
-  FaBullhorn,
   FaPhone,
 } from "react-icons/fa";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
   const links = [
     { name: "Home", path: "/", icon: <FaHome /> },
-    {
-      name: "Requests",
-      path: "/donations",
-      icon: <FaHandHoldingHeart />,
-    },
-    { name: "Donate", path: "/donate", icon: <FaUsers /> },
+    { name: "Requests", path: "/donations", icon: <FaHandHoldingHeart /> },
     { name: "Dashboard", path: "/dashboard", icon: <MdDashboardCustomize /> },
     { name: "Contact", path: "/contact", icon: <FaPhone /> },
   ];
 
-  // Load user from localStorage on mount
+  /* Load user on mount */
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
+  /* Close dropdown on outside click */
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("accessToken");
     navigate("/login");
   };
 
@@ -64,22 +71,21 @@ export default function Navbar() {
                 }`
               }
             >
-              {({ isActive }) => (
-                <span className="relative flex items-center gap-2 group">
-                  <span className="text-lg">{link.icon}</span>
-                  {link.name}
-
-                  {/* Underline animation */}
-                  <span
-                    className={`absolute left-0 -bottom-1 h-[2px] bg-red-600 transition-all duration-300 ${
-                      isActive ? "w-full" : "w-0 group-hover:w-full"
-                    }`}
-                  ></span>
-                </span>
-              )}
+              <span className="relative flex items-center gap-2 group">
+                <span className="text-lg">{link.icon}</span>
+                {link.name}
+                <span
+                  className={`absolute left-0 -bottom-1 h-[2px] bg-red-600 transition-all duration-300 ${
+                    location.pathname === link.path
+                      ? "w-full"
+                      : "w-0 group-hover:w-full"
+                  }`}
+                ></span>
+              </span>
             </NavLink>
           ))}
 
+          {/* Auth Section */}
           {!user ? (
             <Link
               to="/register"
@@ -88,16 +94,42 @@ export default function Navbar() {
               Register
             </Link>
           ) : (
-            <button
-              onClick={handleLogout}
-              className="px-5 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition shadow-md"
-            >
-              Logout
-            </button>
+            <div className="relative" ref={dropdownRef}>
+              {/* Avatar */}
+              <button
+                onClick={() => setDropdownOpen((p) => !p)}
+                className="w-10 h-10 rounded-full bg-red-600 text-white font-bold flex items-center justify-center uppercase shadow-md hover:bg-red-700 transition"
+              >
+                {user?.name?.charAt(0) || "U"}
+              </button>
+
+              {/* Dropdown */}
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-3 w-44 bg-white rounded-xl shadow-lg border overflow-hidden z-50">
+                  <button
+                    onClick={() => {
+                      navigate("/dashboard");
+                      setDropdownOpen(false);
+                    }}
+                    className="w-full px-4 py-3 text-left hover:bg-gray-100 flex items-center gap-2"
+                  >
+                    <MdDashboardCustomize />
+                    Dashboard
+                  </button>
+
+                  <button
+                    onClick={handleLogout}
+                    className="w-full px-4 py-3 text-left hover:bg-red-50 text-red-600 flex items-center gap-2"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           )}
         </div>
 
-        {/* Mobile Hamburger */}
+        {/* Mobile Menu Button */}
         <button
           className="md:hidden text-2xl text-gray-800"
           onClick={() => setOpen(!open)}
@@ -106,7 +138,7 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile Dropdown */}
+      {/* Mobile Menu */}
       <div
         className={`md:hidden transition-all duration-300 overflow-hidden ${
           open ? "max-h-96" : "max-h-0"
@@ -120,7 +152,8 @@ export default function Navbar() {
               onClick={() => setOpen(false)}
               className="text-lg text-gray-800 font-medium hover:text-red-600 transition flex items-center gap-3"
             >
-              <span className="text-xl">{link.icon}</span> {link.name}
+              <span className="text-xl">{link.icon}</span>
+              {link.name}
             </NavLink>
           ))}
 
