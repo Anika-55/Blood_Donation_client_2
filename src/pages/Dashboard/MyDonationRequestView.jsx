@@ -19,7 +19,11 @@ export default function MyDonationRequestView() {
 
     // Determine backend endpoint based on role
     const endpoint =
-      role === "admin" ? `/admin/donations/${id}` : `/donor/${id}`;
+      role === "admin"
+        ? `/admin/donations/${id}`
+        : role === "volunteer"
+        ? `/volunteer/donations/${id}`
+        : `/donor/${id}`;
 
     fetchRequest(endpoint);
     // eslint-disable-next-line

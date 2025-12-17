@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from "react-router";
+import { createBrowserRouter } from "react-router";
 import RootLayout from "../Layouts/RootLayout";
 import Home from "../pages/Home/Home";
 import Login from "../pages/Auth/Login";
@@ -19,6 +19,8 @@ import HomeAdmin from "../pages/Dashboard/HomeAdmin";
 import AllUsers from "../pages/Dashboard/AllUsers";
 import AllBloodDonationRequests from "../pages/Dashboard/AllBloodDonationRequests";
 import RoleBasedDashboardHome from "../pages/Dashboard/RoleBasedDashboardHome";
+import HomeVolunteer from "../pages/Dashboard/HomeVolunteer";
+import VolunteerDonationRequests from "../pages/Dashboard/VolunteerDonationRequests";
 
 export const router = createBrowserRouter([
   {
@@ -66,6 +68,15 @@ export const router = createBrowserRouter([
       {
         path: "all-blood-donation-request",
         element: <AllBloodDonationRequests />,
+      },
+      { path: "volunteer", element: <HomeVolunteer /> },
+      {
+        path: "volunteer/all-blood-donation-request",
+        element: <VolunteerDonationRequests />,
+      },
+      {
+        path: "/dashboard/volunteer/donation/:id",
+        element: <MyDonationRequestView isAdmin={false} />,
       },
     ],
   },

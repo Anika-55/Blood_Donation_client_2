@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 const MySwal = withReactContent(Swal);
 
-export default function AllBloodDonationRequests() {
+export default function VolunteerDonationRequests() {
   const [requests, setRequests] = useState([]);
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
@@ -17,40 +17,21 @@ export default function AllBloodDonationRequests() {
   const token = localStorage.getItem("accessToken");
   const navigate = useNavigate();
 
-  // Detect role
-  const user = JSON.parse(localStorage.getItem("user")) || {};
-  const role = user.role || "donor";
-
-  // Determine API endpoint based on role
-  const getEndpoint = () => {
-    if (role === "admin")
-      return `/admin/donations?page=${page}&limit=${limit}${
-        statusFilter ? `&status=${statusFilter}` : ""
-      }`;
-    if (role === "volunteer")
-      return `/volunteer/donations?page=${page}&limit=${limit}${
-        statusFilter ? `&status=${statusFilter}` : ""
-      }`;
-    return ""; // donors shouldn't see this page
-  };
-
   const fetchRequests = async () => {
     setLoading(true);
     try {
-      const endpoint = getEndpoint();
-      if (!endpoint) throw new Error("Access denied");
-
-      const res = await api.get(endpoint, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      const res = await api.get(
+        `/volunteer/donations?page=${page}&limit=${limit}${
+          statusFilter ? `&status=${statusFilter}` : ""
+        }`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setRequests(res.data.data);
       setTotal(res.data.total);
     } catch (err) {
       console.error("Error fetching requests:", err);
       setRequests([]);
       setTotal(0);
-      MySwal.fire("Error", "Cannot fetch donation requests", "error");
     } finally {
       setLoading(false);
     }
@@ -62,48 +43,10 @@ export default function AllBloodDonationRequests() {
 
   const totalPages = Math.ceil(total / limit) || 1;
 
-  // Only admin can delete
-  const handleDelete = async (id) => {
-    if (role !== "admin") return;
-
-    const result = await MySwal.fire({
-      title: "Are you sure?",
-      text: "You won't be able to revert this!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, delete it!",
-    });
-
-    if (result.isConfirmed) {
-      try {
-        await api.delete(`/admin/donations/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setRequests((prev) => prev.filter((r) => r._id !== id));
-        setTotal((prev) => prev - 1);
-        MySwal.fire(
-          "Deleted!",
-          "Donation request has been deleted.",
-          "success"
-        );
-      } catch (err) {
-        console.error(err);
-        MySwal.fire("Error", "Delete failed", "error");
-      }
-    }
-  };
-
   const handleStatusUpdate = async (id, newStatus) => {
     try {
-      const endpoint =
-        role === "admin"
-          ? `/admin/donations/${id}/status`
-          : `/volunteer/donations/${id}/status`;
-
       await api.patch(
-        endpoint,
+        `/volunteer/donations/${id}/status`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -208,11 +151,7 @@ export default function AllBloodDonationRequests() {
                     {/* View button */}
                     <button
                       onClick={() =>
-                        navigate(
-                          role === "admin"
-                            ? `/dashboard/admin/donation/${req._id}`
-                            : `/dashboard/volunteer/donation/${req._id}`
-                        )
+                        navigate(`/dashboard/volunteer/donation/${req._id}`)
                       }
                       className="text-blue-600 hover:underline"
                     >
@@ -220,36 +159,25 @@ export default function AllBloodDonationRequests() {
                     </button>
 
                     {/* Status update buttons */}
-                    {(role === "admin" || role === "volunteer") &&
-                      req.status === "pending" && (
-                        <>
-                          <button
-                            onClick={() =>
-                              handleStatusUpdate(req._id, "inprogress")
-                            }
-                            className="text-green-600 hover:underline"
-                          >
-                            Resolve
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleStatusUpdate(req._id, "canceled")
-                            }
-                            className="text-red-600 hover:underline"
-                          >
-                            Reject
-                          </button>
-                        </>
-                      )}
-
-                    {/* Only admin can delete */}
-                    {role === "admin" && (
-                      <button
-                        onClick={() => handleDelete(req._id)}
-                        className="text-red-600 hover:underline"
-                      >
-                        Delete
-                      </button>
+                    {req.status === "pending" && (
+                      <>
+                        <button
+                          onClick={() =>
+                            handleStatusUpdate(req._id, "inprogress")
+                          }
+                          className="text-green-600 hover:underline"
+                        >
+                          Resolve
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleStatusUpdate(req._id, "canceled")
+                          }
+                          className="text-red-600 hover:underline"
+                        >
+                          Cancel
+                        </button>
+                      </>
                     )}
                   </td>
                 </tr>

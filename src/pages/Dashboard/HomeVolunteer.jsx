@@ -1,131 +1,64 @@
 import React, { useEffect, useState } from "react";
-import api from "../../api/axios";
-import { FaCheck, FaTimes } from "react-icons/fa";
+import axios from "../../api/axios"; // make sure you have your axios instance
+import { FaTint } from "react-icons/fa";
 
 export default function HomeVolunteer() {
-  const [requests, setRequests] = useState([]);
+  const [recentRequests, setRecentRequests] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [limit] = useState(10);
-  const [total, setTotal] = useState(0);
 
-  const fetchRequests = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem("accessToken");
-      const res = await api.get(
-        `/volunteer/requests?page=${page}&limit=${limit}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setRequests(res.data.data);
-      setTotal(res.data.total);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const user = JSON.parse(localStorage.getItem("user")) || {};
 
   useEffect(() => {
-    fetchRequests();
-  }, [page]);
-
-  const handleStatus = async (id, status) => {
-    try {
-      const token = localStorage.getItem("accessToken");
-      await api.patch(
-        `/volunteer/requests/${id}/status`,
-        { status },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      fetchRequests();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const totalPages = Math.ceil(total / limit);
-
-  if (loading)
-    return (
-      <p className="text-center mt-20 text-gray-500 animate-pulse">
-        Loading donation requests...
-      </p>
-    );
+    const fetchRecentRequests = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get("/donor/dashboard", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        });
+        setRecentRequests(res.data);
+      } catch (err) {
+        console.error("Error fetching recent requests:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRecentRequests();
+  }, []);
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
-      <h2 className="text-3xl font-bold text-red-600 mb-6">
-        Pending Donation Requests
+    <div>
+      <h1 className="text-2xl font-bold mb-4">Volunteer Dashboard</h1>
+      <h2 className="text-lg font-semibold mb-2">
+        Recent Blood Donation Requests
       </h2>
 
-      <div className="grid md:grid-cols-2 gap-4">
-        {requests.map((r) => (
-          <div key={r._id} className="bg-white p-4 rounded-xl shadow-md">
-            <p>
-              <strong>Recipient:</strong> {r.recipientName}
-            </p>
-            <p>
-              <strong>District:</strong> {r.recipientDistrict}
-            </p>
-            <p>
-              <strong>Blood Group:</strong> {r.bloodGroup}
-            </p>
-            <p>
-              <strong>Hospital:</strong> {r.hospital}
-            </p>
-            <p>
-              <strong>Date:</strong>{" "}
-              {new Date(r.donationDate).toLocaleDateString()}
-            </p>
-
-            <div className="mt-4 flex gap-2">
-              {r.status === "pending" && (
-                <>
-                  <button
-                    onClick={() => handleStatus(r._id, "accepted")}
-                    className="flex-1 bg-green-500 text-white p-2 rounded hover:bg-green-600"
-                  >
-                    <FaCheck /> Accept
-                  </button>
-                  <button
-                    onClick={() => handleStatus(r._id, "rejected")}
-                    className="flex-1 bg-red-500 text-white p-2 rounded hover:bg-red-600"
-                  >
-                    <FaTimes /> Reject
-                  </button>
-                </>
-              )}
-              {r.status !== "pending" && (
-                <span className="text-gray-500 capitalize">{r.status}</span>
-              )}
+      {loading ? (
+        <p>Loading...</p>
+      ) : recentRequests.length === 0 ? (
+        <p>No recent requests found.</p>
+      ) : (
+        <div className="space-y-3">
+          {recentRequests.map((req) => (
+            <div
+              key={req._id}
+              className="p-4 bg-white shadow rounded flex justify-between items-center"
+            >
+              <div>
+                <p>
+                  <span className="font-semibold">{req.recipientName}</span> -{" "}
+                  {req.bloodGroup}
+                </p>
+                <p className="text-gray-500 text-sm">
+                  {new Date(req.createdAt).toLocaleString()}
+                </p>
+              </div>
+              <span className="text-red-600 font-semibold">{req.status}</span>
             </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Pagination */}
-      <div className="mt-6 flex justify-center gap-4">
-        <button
-          disabled={page <= 1}
-          onClick={() => setPage((p) => p - 1)}
-          className="px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50"
-        >
-          Prev
-        </button>
-        <span>
-          Page {page} of {totalPages}
-        </span>
-        <button
-          disabled={page >= totalPages}
-          onClick={() => setPage((p) => p + 1)}
-          className="px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50"
-        >
-          Next
-        </button>
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
