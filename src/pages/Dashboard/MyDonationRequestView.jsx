@@ -12,32 +12,43 @@ export default function MyDonationRequestView() {
   const [userRole, setUserRole] = useState("donor"); // default donor
 
   useEffect(() => {
+    // Detect role from localStorage
     const user = JSON.parse(localStorage.getItem("user"));
-    if (user?.role === "admin") setUserRole("admin");
-    fetchRequest();
-    // eslint-disable-next-line
-  }, []);
+    const role = user?.role || "donor";
+    setUserRole(role);
 
-  const fetchRequest = async () => {
+    // Determine backend endpoint based on role
+    const endpoint =
+      role === "admin" ? `/admin/donations/${id}` : `/donor/${id}`;
+
+    fetchRequest(endpoint);
+    // eslint-disable-next-line
+  }, [id]);
+
+  const fetchRequest = async (endpoint) => {
     setLoading(true);
     try {
-      const endpoint =
-        userRole === "admin" ? `/admin/donations/${id}` : `/donor/${id}`;
       const res = await api.get(endpoint, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setRequest(res.data);
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching donation request:", err);
       setRequest(null);
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) return <p className="text-center mt-10">Loading...</p>;
+  if (loading)
+    return <p className="text-center mt-10">Loading donation request...</p>;
+
   if (!request)
-    return <p className="text-center mt-10 text-red-500">Request not found</p>;
+    return (
+      <p className="text-center mt-10 text-red-500">
+        Donation request not found
+      </p>
+    );
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">

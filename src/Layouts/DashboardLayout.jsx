@@ -17,9 +17,10 @@ import { MdDashboardCustomize } from "react-icons/md";
 export default function DashboardLayout() {
   const [open, setOpen] = useState(false);
 
-  // get user role from localStorage (assume it's stored after login)
   const user = JSON.parse(localStorage.getItem("user")) || {};
-  const role = user.role || "donor"; // default to donor
+  const role = user.role || "donor";
+
+  /* ================= MENUS ================= */
 
   // Donor menu
   const donorMenu = [
@@ -34,6 +35,18 @@ export default function DashboardLayout() {
       name: "Create Request",
       path: "/dashboard/create-donation-request",
       icon: <FaPlusCircle />,
+    },
+    { name: "Profile", path: "/dashboard/profile", icon: <FaUser /> },
+  ];
+
+  // Volunteer menu
+  const volunteerMenu = [
+    { name: "Home", path: "/", icon: <FaHome /> },
+    { name: "Dashboard", path: "/dashboard", icon: <MdDashboardCustomize /> },
+    {
+      name: "All Donation Requests",
+      path: "/dashboard/all-blood-donation-request",
+      icon: <FaClipboardList />,
     },
     { name: "Profile", path: "/dashboard/profile", icon: <FaUser /> },
   ];
@@ -56,11 +69,19 @@ export default function DashboardLayout() {
     { name: "Profile", path: "/dashboard/profile", icon: <FaUser /> },
   ];
 
-  const menu = role === "admin" ? adminMenu : donorMenu;
+  /* ========== ROLE BASED MENU PICKER ========== */
+  const menu =
+    role === "admin"
+      ? adminMenu
+      : role === "volunteer"
+      ? volunteerMenu
+      : donorMenu;
+
+  /* ================= UI ================= */
 
   return (
     <div className="min-h-screen flex bg-gray-100">
-      {/* ===== Sidebar (Desktop) ===== */}
+      {/* Sidebar (Desktop) */}
       <aside className="hidden md:flex w-64 bg-white shadow-lg flex-col">
         <div className="px-6 py-5 text-2xl font-bold text-red-600 border-b">
           BloodCare
@@ -99,7 +120,7 @@ export default function DashboardLayout() {
         </div>
       </aside>
 
-      {/* ===== Mobile Sidebar ===== */}
+      {/* Mobile Sidebar */}
       {open && (
         <div className="fixed inset-0 z-40 bg-black/40 md:hidden">
           <div className="w-64 bg-white h-full shadow-lg">
@@ -133,9 +154,8 @@ export default function DashboardLayout() {
         </div>
       )}
 
-      {/* ===== Main Content ===== */}
+      {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Top Bar (Mobile) */}
         <header className="md:hidden bg-white shadow px-4 py-3 flex items-center">
           <button onClick={() => setOpen(true)}>
             <FaBars className="text-xl text-gray-700" />
@@ -145,7 +165,6 @@ export default function DashboardLayout() {
           </h1>
         </header>
 
-        {/* Page Content */}
         <main className="p-6">
           <Outlet />
         </main>

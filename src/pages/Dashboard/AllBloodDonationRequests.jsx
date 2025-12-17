@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 const MySwal = withReactContent(Swal);
 
-export default function AllDonationRequests() {
+export default function AllBloodDonationRequests() {
   const [requests, setRequests] = useState([]);
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
