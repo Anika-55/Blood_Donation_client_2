@@ -22,6 +22,7 @@ import HomeVolunteer from "../pages/Dashboard/HomeVolunteer";
 import VolunteerDonationRequests from "../pages/Dashboard/VolunteerDonationRequests";
 import Profile from "../pages/Dashboard/Profile"; // ✅ import profile page
 import SearchDonors from "../components/SearchDonors";
+import ContactUs from "../components/ContactUs";
 
 export const router = createBrowserRouter([
   {
@@ -31,6 +32,10 @@ export const router = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: "donations", element: <BloodDonationRequests /> },
       { path: "search", element: <SearchDonors /> },
+      {
+        path: "contact",
+        element: <ContactUs />,
+      },
       {
         path: "blood-donation-requests/:id",
         element: (

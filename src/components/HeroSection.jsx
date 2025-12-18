@@ -23,10 +23,10 @@ const HeroSection = () => {
               Become a Donor
             </Link>
             <Link
-              to="/login"
+              to="/search"
               className="px-6 py-3 border border-red-600 text-red-600 font-semibold rounded-lg hover:bg-red-50 transform hover:-translate-y-1 transition duration-300"
             >
-              Login
+              Search Donor
             </Link>
           </div>
         </div>

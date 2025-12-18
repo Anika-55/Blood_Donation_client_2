@@ -20,9 +20,6 @@ export default function DashboardLayout() {
   const user = JSON.parse(localStorage.getItem("user")) || {};
   const role = user.role || "donor";
 
-  /* ================= MENUS ================= */
-
-  // Donor menu
   const donorMenu = [
     { name: "Home", path: "/", icon: <FaHome /> },
     { name: "Dashboard", path: "/dashboard", icon: <MdDashboardCustomize /> },
@@ -36,7 +33,6 @@ export default function DashboardLayout() {
       path: "/dashboard/create-donation-request",
       icon: <FaPlusCircle />,
     },
-    { name: "Profile", path: "/dashboard/profile", icon: <FaUser /> },
   ];
 
   // Volunteer menu

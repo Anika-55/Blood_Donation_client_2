@@ -14,7 +14,6 @@ export default function SearchDonors() {
   const [districts, setDistricts] = useState([]);
   const [upazilas, setUpazilas] = useState([]);
 
-  // Load districts (like registration page)
   useEffect(() => {
     fetch("/centers.json")
       .then((res) => res.json())
