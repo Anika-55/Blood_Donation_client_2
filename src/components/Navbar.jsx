@@ -7,29 +7,31 @@ import {
   FaHome,
   FaHandHoldingHeart,
   FaPhone,
+  FaSearch,
 } from "react-icons/fa";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const dropdownRef = useRef();
 
   const links = [
     { name: "Home", path: "/", icon: <FaHome /> },
     { name: "Requests", path: "/donations", icon: <FaHandHoldingHeart /> },
+    { name: "Search", path: "/search", icon: <FaSearch /> },
     { name: "Dashboard", path: "/dashboard", icon: <MdDashboardCustomize /> },
     { name: "Contact", path: "/contact", icon: <FaPhone /> },
   ];
 
-  /* Load user on mount */
+  // Load user from localStorage on mount
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
-  /* Close dropdown on outside click */
+  // Close dropdown if clicked outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -60,7 +62,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center space-x-8">
+        <div className="hidden md:flex items-center space-x-6">
           {links.map((link) => (
             <NavLink
               key={link.path}
@@ -71,21 +73,11 @@ export default function Navbar() {
                 }`
               }
             >
-              <span className="relative flex items-center gap-2 group">
-                <span className="text-lg">{link.icon}</span>
-                {link.name}
-                <span
-                  className={`absolute left-0 -bottom-1 h-[2px] bg-red-600 transition-all duration-300 ${
-                    location.pathname === link.path
-                      ? "w-full"
-                      : "w-0 group-hover:w-full"
-                  }`}
-                ></span>
-              </span>
+              <span className="text-lg">{link.icon}</span>
+              {link.name}
             </NavLink>
           ))}
 
-          {/* Auth Section */}
           {!user ? (
             <Link
               to="/register"
@@ -95,31 +87,37 @@ export default function Navbar() {
             </Link>
           ) : (
             <div className="relative" ref={dropdownRef}>
-              {/* Avatar */}
               <button
-                onClick={() => setDropdownOpen((p) => !p)}
-                className="w-10 h-10 rounded-full bg-red-600 text-white font-bold flex items-center justify-center uppercase shadow-md hover:bg-red-700 transition"
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="flex items-center gap-2 bg-gray-100 p-2 rounded-full hover:shadow transition"
               >
-                {user?.name?.charAt(0) || "U"}
+                <img
+                  src={user.avatar || "/default-avatar.png"}
+                  alt="avatar"
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+                <span className="font-medium">{user.name}</span>
               </button>
 
-              {/* Dropdown */}
               {dropdownOpen && (
-                <div className="absolute right-0 mt-3 w-44 bg-white rounded-xl shadow-lg border overflow-hidden z-50">
-                  <button
-                    onClick={() => {
-                      navigate("/dashboard");
-                      setDropdownOpen(false);
-                    }}
-                    className="w-full px-4 py-3 text-left hover:bg-gray-100 flex items-center gap-2"
+                <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-xl overflow-hidden z-50">
+                  <Link
+                    to="/dashboard"
+                    className="block px-4 py-2 text-gray-700 hover:bg-red-100"
+                    onClick={() => setDropdownOpen(false)}
                   >
-                    <MdDashboardCustomize />
                     Dashboard
-                  </button>
-
+                  </Link>
+                  <Link
+                    to="/dashboard/profile"
+                    className="block px-4 py-2 text-gray-700 hover:bg-red-100"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    Profile
+                  </Link>
                   <button
                     onClick={handleLogout}
-                    className="w-full px-4 py-3 text-left hover:bg-red-50 text-red-600 flex items-center gap-2"
+                    className="w-full text-left px-4 py-2 text-gray-700 hover:bg-red-100"
                   >
                     Logout
                   </button>
@@ -129,7 +127,7 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile Menu Button */}
+        {/* Mobile Hamburger */}
         <button
           className="md:hidden text-2xl text-gray-800"
           onClick={() => setOpen(!open)}
@@ -138,7 +136,7 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Dropdown */}
       <div
         className={`md:hidden transition-all duration-300 overflow-hidden ${
           open ? "max-h-96" : "max-h-0"
@@ -152,8 +150,7 @@ export default function Navbar() {
               onClick={() => setOpen(false)}
               className="text-lg text-gray-800 font-medium hover:text-red-600 transition flex items-center gap-3"
             >
-              <span className="text-xl">{link.icon}</span>
-              {link.name}
+              {link.icon} {link.name}
             </NavLink>
           ))}
 
@@ -166,15 +163,31 @@ export default function Navbar() {
               Login
             </Link>
           ) : (
-            <button
-              onClick={() => {
-                handleLogout();
-                setOpen(false);
-              }}
-              className="px-4 py-2 bg-red-600 text-white rounded-xl text-center shadow hover:bg-red-700 transition"
-            >
-              Logout
-            </button>
+            <div className="space-y-2">
+              <Link
+                to="/dashboard"
+                onClick={() => setOpen(false)}
+                className="block px-4 py-2 bg-gray-100 rounded-xl text-gray-700 hover:bg-red-100"
+              >
+                Dashboard
+              </Link>
+              <Link
+                to="/dashboard/profile"
+                onClick={() => setOpen(false)}
+                className="block px-4 py-2 bg-gray-100 rounded-xl text-gray-700 hover:bg-red-100"
+              >
+                Profile
+              </Link>
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setOpen(false);
+                }}
+                className="w-full text-left px-4 py-2 bg-gray-100 rounded-xl text-gray-700 hover:bg-red-100"
+              >
+                Logout
+              </button>
+            </div>
           )}
         </div>
       </div>

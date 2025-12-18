@@ -3,7 +3,6 @@ import RootLayout from "../Layouts/RootLayout";
 import Home from "../pages/Home/Home";
 import Login from "../pages/Auth/Login";
 import Register from "../pages/Auth/Register";
-// import BloodDonations from "../pages/Requests/BloodDonationRequests";
 import DonationDetails from "../pages/Requests/DonationDetails";
 import PrivateRoute from "./PrivateRoute";
 import DashboardLayout from "../Layouts/DashboardLayout";
@@ -21,6 +20,8 @@ import AllBloodDonationRequests from "../pages/Dashboard/AllBloodDonationRequest
 import RoleBasedDashboardHome from "../pages/Dashboard/RoleBasedDashboardHome";
 import HomeVolunteer from "../pages/Dashboard/HomeVolunteer";
 import VolunteerDonationRequests from "../pages/Dashboard/VolunteerDonationRequests";
+import Profile from "../pages/Dashboard/Profile"; // ✅ import profile page
+import SearchDonors from "../components/SearchDonors";
 
 export const router = createBrowserRouter([
   {
@@ -28,7 +29,8 @@ export const router = createBrowserRouter([
     element: <RootLayout />,
     children: [
       { index: true, element: <Home /> },
-      { path: "donations", element: <BloodDonationRequests /> }, // public donations page
+      { path: "donations", element: <BloodDonationRequests /> },
+      { path: "search", element: <SearchDonors /> },
       {
         path: "blood-donation-requests/:id",
         element: (
@@ -57,6 +59,9 @@ export const router = createBrowserRouter([
         path: "/dashboard/donor/donation/:id",
         element: <MyDonationRequestView isAdmin={false} />,
       },
+      // Profile page for all roles
+      { path: "profile", element: <Profile /> }, // ✅ added profile route
+
       // Admin routes
       { path: "admin", element: <HomeAdmin /> },
       { path: "all-users", element: <AllUsers /> },
@@ -64,11 +69,12 @@ export const router = createBrowserRouter([
         path: "/dashboard/admin/donation/:id",
         element: <MyDonationRequestView isAdmin={true} />,
       },
-
       {
         path: "all-blood-donation-request",
         element: <AllBloodDonationRequests />,
       },
+
+      // Volunteer routes
       { path: "volunteer", element: <HomeVolunteer /> },
       {
         path: "volunteer/all-blood-donation-request",
@@ -77,6 +83,10 @@ export const router = createBrowserRouter([
       {
         path: "/dashboard/volunteer/donation/:id",
         element: <MyDonationRequestView isAdmin={false} />,
+      },
+      {
+        path: "volunteer/create-donation-request",
+        element: <CreateDonationRequest />,
       },
     ],
   },

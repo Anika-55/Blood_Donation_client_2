@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaHospital, FaUser, FaTint, FaClock } from "react-icons/fa";
-import api from "../../api/axios"; // Axios instance with baseURL = http://localhost:5000/api
+import api from "../../api/axios";
 
 export default function CreateDonationRequest() {
   const navigate = useNavigate();
@@ -10,6 +10,9 @@ export default function CreateDonationRequest() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const [districts, setDistricts] = useState([]);
+  const [upazilas, setUpazilas] = useState([]);
 
   const [formData, setFormData] = useState({
     recipientName: "",
@@ -23,8 +26,31 @@ export default function CreateDonationRequest() {
     message: "",
   });
 
-  const districts = ["Dhaka", "Chattogram", "Rajshahi"];
-  const upazilas = ["Dhanmondi", "Mirpur", "Uttara"];
+  /* ---------------- Load Districts ---------------- */
+  useEffect(() => {
+    fetch("/centers.json")
+      .then((res) => res.json())
+      .then((data) => {
+        const uniqueDistricts = [...new Set(data.map((d) => d.district))];
+        setDistricts(uniqueDistricts);
+      })
+      .catch((err) => console.error(err));
+  }, []);
+
+  /* ---------------- Load Upazilas on District Change ---------------- */
+  useEffect(() => {
+    if (!formData.recipientDistrict) return;
+
+    fetch("/centers.json")
+      .then((res) => res.json())
+      .then((data) => {
+        const districtData = data.find(
+          (d) => d.district === formData.recipientDistrict
+        );
+        setUpazilas(districtData ? districtData.covered_area : []);
+        setFormData((prev) => ({ ...prev, recipientUpazila: "" }));
+      });
+  }, [formData.recipientDistrict]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -42,11 +68,10 @@ export default function CreateDonationRequest() {
 
     setLoading(true);
     try {
-      await api.post(
-        "/donor", // Matches backend route
-        formData,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.post("/donor", formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
       navigate("/dashboard/my-donation-requests");
     } catch (err) {
       console.error(err);
@@ -92,6 +117,7 @@ export default function CreateDonationRequest() {
               value={formData.recipientName}
               onChange={handleChange}
             />
+
             <Select
               label="Blood Group"
               name="bloodGroup"
@@ -99,6 +125,7 @@ export default function CreateDonationRequest() {
               onChange={handleChange}
               options={["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]}
             />
+
             <Select
               label="District"
               name="recipientDistrict"
@@ -106,12 +133,14 @@ export default function CreateDonationRequest() {
               onChange={handleChange}
               options={districts}
             />
+
             <Select
               label="Upazila"
               name="recipientUpazila"
               value={formData.recipientUpazila}
               onChange={handleChange}
               options={upazilas}
+              disabled={!formData.recipientDistrict}
             />
           </div>
         </Section>
@@ -181,6 +210,8 @@ export default function CreateDonationRequest() {
   );
 }
 
+/* ---------- Reusable Components ---------- */
+
 function Section({ title, icon, children }) {
   return (
     <div className="mb-10">
@@ -209,7 +240,7 @@ function Input({ label, name, type = "text", value, onChange }) {
   );
 }
 
-function Select({ label, name, options, value, onChange }) {
+function Select({ label, name, options, value, onChange, disabled }) {
   return (
     <div>
       <label className="block font-medium mb-1">{label}</label>
@@ -217,12 +248,15 @@ function Select({ label, name, options, value, onChange }) {
         name={name}
         value={value}
         onChange={onChange}
+        disabled={disabled}
         required
-        className="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-500 outline-none"
+        className="w-full border rounded-xl px-4 py-3 focus:ring-2 focus:ring-red-500 outline-none disabled:bg-gray-100"
       >
         <option value="">Select {label}</option>
         {options.map((op) => (
-          <option key={op}>{op}</option>
+          <option key={op} value={op}>
+            {op}
+          </option>
         ))}
       </select>
     </div>
