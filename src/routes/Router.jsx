@@ -20,7 +20,6 @@ import AllBloodDonationRequests from "../pages/Dashboard/AllBloodDonationRequest
 import RoleBasedDashboardHome from "../pages/Dashboard/RoleBasedDashboardHome";
 import HomeVolunteer from "../pages/Dashboard/HomeVolunteer";
 import VolunteerDonationRequests from "../pages/Dashboard/VolunteerDonationRequests";
-import Profile from "../pages/Dashboard/Profile"; // ✅ import profile page
 import SearchDonors from "../components/SearchDonors";
 import ContactUs from "../components/ContactUs";
 
@@ -64,8 +63,6 @@ export const router = createBrowserRouter([
         path: "/dashboard/donor/donation/:id",
         element: <MyDonationRequestView isAdmin={false} />,
       },
-      // Profile page for all roles
-      { path: "profile", element: <Profile /> }, // ✅ added profile route
 
       // Admin routes
       { path: "admin", element: <HomeAdmin /> },
