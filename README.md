@@ -1,16 +1,138 @@
-# React + Vite
+🩸 Blood Donation Management System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-stack Blood Donation Management System built with React, Node.js, Express, MongoDB, and Tailwind CSS.
+The platform connects donors, volunteers, and administrators to manage blood donation requests efficiently and transparently.
 
-Currently, two official plugins are available:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## React Compiler
+🔗 Live URL
+Frontend:
+Backend API:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## Expanding the ESLint configuration
+🎯 Purpose of the Project
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+The purpose of this project is to:
+
+ * Digitize blood donation management
+
+ * Make donor search faster and more reliable
+
+ * Help volunteers and admins manage requests effectively
+
+ * Provide a secure, role-based dashboard system
+
+This system is designed for real-world use by hospitals, NGOs, or blood donation organizations.
+
+
+
+
+✨ Key Features
+👤 Authentication & Authorization
+
+* User registration & login with JWT
+
+* Secure password hashing
+
+* Role-based access (Donor, Volunteer, Admin)
+
+
+🩸 Donor Features
+
+* Create blood donation requests
+
+* View request status
+
+* Manage personal profile
+
+* Search donors by blood group & location
+
+
+🤝 Volunteer Features
+
+* View assigned donation requests
+
+* Update donation status
+
+* Dashboard statistics
+
+
+🛠️ Admin Features
+
+* Manage all users (block/unblock)
+
+* View all donation requests
+
+* Assign volunteers
+
+* Monitor platform activity
+
+
+📩 Contact Us
+
+* Users can send messages
+
+* Messages stored in MongoDB for admin review
+
+
+🎨 UI/UX
+
+* Modern & responsive design
+
+* Tailwind CSS styling
+
+* Mobile-friendly dashboards
+
+
+🧰 Tech Stack
+Frontend
+
+** React
+
+** Tailwind CSS
+
+** React Router
+
+** Axios
+
+** SweetAlert2
+
+** React Icons
+
+Backend
+
+** Node.js
+
+** Express.js
+
+** MongoDB
+
+** JWT (JSON Web Token)
+
+** bcrypt
+
+📦 NPM Packages Used
+## Frontend
+react
+react-router-dom
+axios
+tailwindcss
+sweetalert2
+react-icons
+
+## Backend
+express
+mongodb
+jsonwebtoken
+bcrypt
+cors
+dotenv
+
+
+
+
+
+
+
+
+
