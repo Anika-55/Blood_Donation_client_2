@@ -18,9 +18,9 @@ export default function Navbar() {
   const dropdownRef = useRef();
 
   const links = [
-    { name: "Home", path: "/", icon: <FaHome /> },
-    { name: "Requests", path: "/donations", icon: <FaHandHoldingHeart /> },
-    { name: "Search", path: "/search", icon: <FaSearch /> },
+    { name: "Home", path: "/" },
+    { name: "Requests", path: "/donations" },
+    { name: "Search", path: "/search" },
     { name: "Dashboard", path: "/dashboard", icon: <MdDashboardCustomize /> },
     { name: "Contact", path: "/contact", icon: <FaPhone /> },
   ];

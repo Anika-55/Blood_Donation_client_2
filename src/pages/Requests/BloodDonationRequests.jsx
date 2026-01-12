@@ -9,7 +9,9 @@ export default function BloodDonationRequests() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/donations?status=pending")
+    fetch(
+      "https://blood-donation-server-virid.vercel.app/api/donations?status=pending"
+    )
       .then((res) => res.json())
       .then((data) => {
         setRequests(data);
